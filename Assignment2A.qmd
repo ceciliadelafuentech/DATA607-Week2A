@@ -118,6 +118,7 @@ movie_data <- dbGetQuery(con, "
     LEFT JOIN rating_lookup AS r
         ON s.coyote_vs_acme = r.response;
 ")
+
 head(movie_data)
 
 
