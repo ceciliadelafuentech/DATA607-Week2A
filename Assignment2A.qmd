@@ -17,36 +17,36 @@ For Assignment 2A, I used Rotten Tomatoes' article titled "[30 Most Popular Movi
 
 ### In pgAdmin 4
 
-Downloaded survey responses and saved file as csv, created a new and imported the file
+Downloaded survey responses and saved file as csv, created a new table and imported the file
 
 ```{sql connection=}
-CREATE TABLE survey_responses ( 
-  id INTEGER, 
-  the_odyssey TEXT, 
-  spider_man TEXT, 
-  tony TEXT, 
-  obsession TEXT, 
-  the_dog_stars TEXT, 
-  coyote_vs_acme TEXT 
-);
+# CREATE TABLE survey_responses ( 
+#   id INTEGER, 
+#   the_odyssey TEXT, 
+#   spider_man TEXT, 
+#   tony TEXT, 
+#   obsession TEXT, 
+#   the_dog_stars TEXT, 
+#   coyote_vs_acme TEXT 
+# );
 ```
 
 Then I created a second table to match the text rating responses to a numerical rating, and inserted values into the new table
 
 ```{sql connection=}
-CREATE TABLE rating_lookup ( 
-  response TEXT, 
-  rating INTEGER 
-); 
-
-INSERT INTO rating_lookup (response, rating) 
-VALUES 
-  ('Hated it!', 1), 
-  ('Not for me.', 2), 
-  ('It was okay.', 3), 
-  ('Liked it.', 4), 
-  ('Loved it!', 5), 
-  ('Have not seen it.', NULL);
+# CREATE TABLE rating_lookup ( 
+#   response TEXT, 
+#   rating INTEGER 
+# ); 
+# 
+# INSERT INTO rating_lookup (response, rating) 
+# VALUES 
+#   ('Hated it!', 1), 
+#   ('Not for me.', 2), 
+#   ('It was okay.', 3), 
+#   ('Liked it.', 4), 
+#   ('Loved it!', 5), 
+#   ('Have not seen it.', NULL);
 ```
 
 ### In RStudio
@@ -119,7 +119,34 @@ movie_data <- dbGetQuery(con, "
         ON s.coyote_vs_acme = r.response;
 ")
 
+
 head(movie_data)
 
-
 ```
+
+I used group by to analyze the movie column and summarize to get the average rating and the rating counts for each movie. The formula handles nulls by excluding them so that there isn't an error and arranges in descending order by counts.
+
+```{r}
+movie_data_avg <- movie_data %>%
+  group_by(movie) %>%
+  summarize(
+    avg_rating_given = mean(rating, na.rm = TRUE),
+    rating_counts = sum(!is.na(rating))
+  ) %>%
+  arrange(desc(rating_counts))
+
+print(movie_data_avg)
+```
+
+### Visualization
+
+The scatter plot shows each movie as a unique color in relation to their average rating and count.
+
+```{r}
+ggplot(movie_data_avg, aes(x = rating_counts, y = avg_rating_given, color = movie))+
+  geom_point()
+```
+
+## Conclusions
+
+I was pleasantly surprised that many more people than I expected completed my survey, which diminished my worry about low participation and I was able to complete a first round analysis. The next step could probably be trying to do some transformations based on the respondent ID, like grouping the data by respondent ID to figure out how many movies each person actually watched and rated.
