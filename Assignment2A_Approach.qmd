@@ -10,3 +10,131 @@ editor: visual
 ### Overview
 
 For Assignment 2A, I used Rotten Tomatoes' article titled "[30 Most Popular Movies Right Now: What to Watch In Theaters and Streaming](https://editorial.rottentomatoes.com/guide/popular-movies/)" to choose six movies currently in theaters; *The Odyssey, Spider-Man: Brand New Day, Tony, Obsession, The Dog Stars, and Coyote vs. ACME.* I created a [simple survey](https://forms.cloud.microsoft/r/JqecqrN0jp) asking respondents to rate each of the movies they have seen from the list and to select "Have not seen it." if they haven't. To ensure data completeness each response is required, but the survey should only take about 30 seconds to fill out to avoid survey fatigue. Once responses have been collected I will design the SQL tables and start the analysis. The main problem I anticipate is low survey participation and a high volume of "Have not seen it." responses which could limit the analysis.
+
+## Code Base Deliverable
+
+### In pgAdmin 4
+
+Downloaded survey responses and saved file as csv, created a new and imported the file
+
+`CREATE TABLE survey_responses (`
+
+`id INTEGER,`
+
+`the_odyssey TEXT,`
+
+`spider_man TEXT,`
+
+`tony TEXT,`
+
+`obsession TEXT,`
+
+`the_dog_stars TEXT,`
+
+`coyote_vs_acme TEXT`
+
+`);`
+
+Then I created a second table to match the text rating responses to a numerical rating, and inserted values into the new table
+
+`CREATE TABLE rating_lookup (`
+
+`response TEXT,`
+
+`rating INTEGER`
+
+`);`
+
+`INSERT INTO rating_lookup (response, rating)`
+
+`VALUES`
+
+`('Hated it!', 1),`
+
+`('Not for me.', 2),`
+
+`('It was okay.', 3),`
+
+`('Liked it.', 4),`
+
+`('Loved it!', 5),`
+
+`('Have not seen it.', NULL);`
+
+### In RStudio
+
+### Load libraries
+
+```{r}
+library(DBI)
+library(RPostgres)
+library(tidyverse)
+```
+
+### Connect to PostgreSQL
+
+`con <- dbConnect(`
+
+`RPostgres::Postgres(),`
+
+`dbname = "607",`
+
+`host = "localhost",`
+
+`port = 5432,`
+
+`user = "postgres",`
+
+`password = ""`
+
+`)`
+
+### Transformation process
+
+These JOINs and UNIONs take the tables in SQL and create a data frame with 3 columns; the respondent ID from the survey_response table, a new column called movie with each movie title as values, and rating in numeric form from the rating_lookup table. I used LEFT JOIN to include all values.
+
+```         
+movie_data <- dbGetQuery(con, " 
+SELECT s.id, 'The Odyssey' AS movie, r.rating 
+FROM survey_responses AS s 
+LEFT JOIN rating_lookup AS r 
+  ON s.the_odyssey = r.response
+
+UNION ALL
+
+SELECT s.id, 'Spider-Man: Brand New Day' AS movie, r.rating
+FROM survey_responses AS s
+LEFT JOIN rating_lookup AS r
+    ON s.spider_man = r.response
+
+UNION ALL
+
+SELECT s.id, 'Tony' AS movie, r.rating
+FROM survey_responses AS s
+LEFT JOIN rating_lookup AS r
+    ON s.tony = r.response
+
+UNION ALL
+
+SELECT s.id, 'Obsession' AS movie, r.rating
+FROM survey_responses AS s
+LEFT JOIN rating_lookup AS r
+    ON s.obsession = r.response
+
+UNION ALL
+
+SELECT s.id, 'The Dog Stars' AS movie, r.rating
+FROM survey_responses AS s
+LEFT JOIN rating_lookup AS r
+    ON s.the_dog_stars = r.response
+
+UNION ALL
+
+SELECT s.id, 'Coyote vs. ACME' AS movie, r.rating
+FROM survey_responses AS s
+LEFT JOIN rating_lookup AS r
+    ON s.coyote_vs_acme = r.response;
+    ")
+
+head(movie_data)
+```
