@@ -19,7 +19,7 @@ For Assignment 2A, I used Rotten Tomatoes' article titled "[30 Most Popular Movi
 
 Downloaded survey responses and saved file as csv, created a new table and imported the file
 
-```{sql connection=}
+```{}
 # CREATE TABLE survey_responses ( 
 #   id INTEGER, 
 #   the_odyssey TEXT, 
@@ -33,7 +33,7 @@ Downloaded survey responses and saved file as csv, created a new table and impor
 
 Then I created a second table to match the text rating responses to a numerical rating, and inserted values into the new table
 
-```{sql connection=}
+```{}
 # CREATE TABLE rating_lookup ( 
 #   response TEXT, 
 #   rating INTEGER 
